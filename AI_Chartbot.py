@@ -6,7 +6,7 @@ import numpy as np
 import PyPDF2
 
 # ------------------ 🤖 FREE MODEL ------------------
-chatbot = pipeline("text-generation", model="gpt2")
+pipeline("text2text-generation", model="google/flan-t5-small")
 
 # ------------------ 🎨 ANIMATED HEADER ------------------
 st.markdown("""

@@ -5,8 +5,8 @@ import faiss
 import numpy as np
 import PyPDF2
 
-# ------------------ 🤖 FREE MODEL ------------------
-pipeline("text2text-generation", model="google/flan-t5-small")
+# ------------------ 🤖 MODEL FIX ------------------
+chatbot = pipeline("text2text-generation", model="google/flan-t5-small")
 
 # ------------------ 🎨 ANIMATED HEADER ------------------
 st.markdown("""
@@ -28,14 +28,30 @@ st.markdown("""
     0% { transform: translate(0,0); }
     100% { transform: translate(-100%,0); }
 }
+
+/* Chat bubble style */
+.user-msg {
+    background: #1f77b4;
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    margin: 5px 0;
+}
+.bot-msg {
+    background: #2ecc71;
+    padding: 10px;
+    border-radius: 10px;
+    color: black;
+    margin: 5px 0;
+}
 </style>
 
 <div class="marquee">
-<span>🚀 Technocrats Institute Of Technology Bhopal - FREE AI CHATBOT 🚀</span>
+<span>🚀 Technocrats Institute Of Technology Bhopal - AI CHATBOT 🚀</span>
 </div>
 """, unsafe_allow_html=True)
 
-st.title("🤖 Free AI Chatbot (No API)")
+st.title("🤖 Smart AI Chatbot")
 
 # ------------------ 💬 CHAT ------------------
 if "history" not in st.session_state:
@@ -44,22 +60,33 @@ if "history" not in st.session_state:
 user_input = st.chat_input("Ask something...")
 
 if user_input:
-    st.chat_message("user").write(user_input)
+    st.session_state.history.append(("user", user_input))
 
-    response = chatbot(user_input, max_length=100, num_return_sequences=1)
+    response = chatbot(user_input, max_length=100)
     reply = response[0]["generated_text"]
 
-    st.chat_message("assistant").write(reply)
+    st.session_state.history.append(("bot", reply))
+
+# Display chat history
+for role, msg in st.session_state.history:
+    if role == "user":
+        st.markdown(f'<div class="user-msg">👤 {msg}</div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div class="bot-msg">🤖 {msg}</div>', unsafe_allow_html=True)
+
+# Clear chat
+if st.button("🧹 Clear Chat"):
+    st.session_state.history = []
 
 # ------------------ 📄 PDF CHAT ------------------
 st.divider()
-st.subheader("📄 Ask from PDF")
+st.subheader("📄 Ask Questions from PDF")
 
 def read_pdf(file):
     reader = PyPDF2.PdfReader(file)
     text = ""
     for page in reader.pages:
-        text += page.extract_text()
+        text += page.extract_text() or ""
     return text
 
 def create_embeddings(text):
